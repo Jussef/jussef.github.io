@@ -1,3 +1,14 @@
-title: "Mi progreso en el curso"
-description: "Notas cortas de lo que voy aprendiendo"
+title: "Mi portafolio"
+description: "Portafolio profesional de Jussef"
 theme: minima
+author: "Jussef"
+email: "tu-email@ejemplo.com"
+url: "https://jussef.github.io"
+social:
+	github: jussef
+	linkedin: tu-linkedin
+	twitter: tu-twitter
+
+# Configuración para portafolio
+show_excerpts: true
+paginate: 5
