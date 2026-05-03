@@ -1,577 +1,986 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jussef - Software Engineer & Game Designer</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jussef · Dev Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg:       #080810;
+      --surface:  #0f0f1a;
+      --border:   #1e1e35;
+      --neon-p:   #a855f7;
+      --neon-c:   #06b6d4;
+      --neon-g:   #10b981;
+      --neon-y:   #f59e0b;
+      --text:     #e2e8f0;
+      --muted:    #64748b;
+    }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #333;
-            overflow-x: hidden;
-        }
+    * { margin:0; padding:0; box-sizing:border-box; }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
 
-        /* Header */ 
-        header {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            z-index: 1000;
-            padding: 1rem 0;
-        }
+    code, pre, .mono { font-family: 'JetBrains Mono', monospace; }
 
-        nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    /* ── SIDEBAR ── */
+    #sidebar {
+      width: 72px;
+      min-width: 72px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 0;
+      gap: 6px;
+      z-index: 50;
+      transition: width .25s ease;
+      overflow: hidden;
+    }
+    #sidebar.expanded { width: 220px; }
 
-        .logo {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: white;
-            text-decoration: none;
-        }
+    .logo-mark {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      font-size: 1.1rem;
+      background: linear-gradient(135deg, var(--neon-p), var(--neon-c));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      white-space: nowrap;
+      padding: 0 16px;
+      margin-bottom: 10px;
+      width: 100%;
+    }
 
-        .nav-links {
-            display: flex;
-            list-style: none;
-            gap: 2rem;
-        }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: calc(100% - 16px);
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all .2s;
+      color: var(--muted);
+      white-space: nowrap;
+      border: 1px solid transparent;
+    }
+    .nav-item:hover { background: rgba(168,85,247,.08); color: var(--text); }
+    .nav-item.active {
+      background: rgba(168,85,247,.15);
+      color: var(--neon-p);
+      border-color: rgba(168,85,247,.3);
+    }
+    .nav-item .icon { width: 20px; text-align: center; flex-shrink: 0; font-size: .95rem; }
+    .nav-label { font-size: .82rem; font-weight: 500; opacity: 0; transition: opacity .2s; }
+    #sidebar.expanded .nav-label { opacity: 1; }
 
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
+    .sidebar-footer {
+      margin-top: auto;
+      width: calc(100% - 16px);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
 
-        .nav-links a:hover {
-            color: #ffd700;
-            transform: translateY(-2px);
-        }
+    /* ── MAIN ── */
+    #main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 28px 32px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+    #main::-webkit-scrollbar { width: 4px; }
+    #main::-webkit-scrollbar-track { background: transparent; }
+    #main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-        /* Hero Section */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            position: relative;
-        }
+    /* ── SECTIONS ── */
+    .section { display: none; animation: fadeUp .3s ease; }
+    .section.active { display: block; }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(12px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
 
-        .hero-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-            align-items: center;
-        }
+    /* ── PAGE HEADER ── */
+    .page-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+    .page-header .icon-wrap {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+    }
+    .page-header h1 { font-size: 1.5rem; font-weight: 700; }
+    .page-header p  { font-size: .82rem; color: var(--muted); margin-top: 1px; }
 
-        .hero-text h1 {
-            font-size: 3.5rem;
-            color: white;
-            margin-bottom: 1rem;
-            animation: fadeInUp 1s ease;
-        }
+    /* ── GRID ── */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    @media(max-width:900px) { .grid-3 { grid-template-columns: 1fr 1fr; } .grid-2 { grid-template-columns: 1fr; } }
+    @media(max-width:640px) { .grid-3, .grid-2 { grid-template-columns: 1fr; } }
 
-        .hero-text .highlight {
-            color: #ffd700;
-            background: linear-gradient(45deg, #ffd700, #ff6b6b);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
+    /* ── CARD ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .card:hover { border-color: rgba(168,85,247,.35); box-shadow: 0 0 24px rgba(168,85,247,.06); }
 
-        .hero-text p {
-            font-size: 1.3rem;
-            color: rgba(255, 255, 255, 0.9);
-            margin-bottom: 2rem;
-            line-height: 1.6;
-            animation: fadeInUp 1s ease 0.2s both;
-        }
+    /* ── SNIPPET CARD ── */
+    .snippet-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .snippet-card:hover { border-color: rgba(6,182,212,.35); box-shadow: 0 0 24px rgba(6,182,212,.06); }
 
-        .cta-buttons {
-            display: flex;
-            gap: 1rem;
-            animation: fadeInUp 1s ease 0.4s both;
-        }
+    .snippet-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: rgba(255,255,255,.03);
+      border-bottom: 1px solid var(--border);
+    }
+    .snippet-lang { font-family: 'JetBrains Mono', monospace; font-size: .75rem; color: var(--neon-c); font-weight: 600; }
+    .snippet-title { font-size: .8rem; color: var(--text); font-weight: 500; }
 
-        .btn {
-            padding: 1rem 2rem;
-            border: none;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
+    .copy-btn {
+      font-size: .7rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all .2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .copy-btn:hover { border-color: var(--neon-c); color: var(--neon-c); }
+    .copy-btn.copied { border-color: var(--neon-g); color: var(--neon-g); }
 
-        .btn-primary {
-            background: linear-gradient(45deg, #ff6b6b, #ffd700);
-            color: white;
-        }
+    .snippet-body {
+      padding: 16px;
+      overflow-x: auto;
+    }
+    .snippet-body pre {
+      font-size: .78rem;
+      line-height: 1.65;
+      color: #94a3b8;
+      white-space: pre;
+    }
+    .kw  { color: #c084fc; }
+    .fn  { color: #67e8f9; }
+    .str { color: #86efac; }
+    .cm  { color: #475569; font-style: italic; }
+    .op  { color: #f1a1a1; }
+    .num { color: #fbbf24; }
 
-        .btn-secondary {
-            background: transparent;
-            color: white;
-            border: 2px solid white;
-        }
+    /* ── RESOURCE LINK ── */
+    .res-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      color: var(--muted);
+      font-size: .84rem;
+      transition: all .2s;
+      border: 1px solid transparent;
+    }
+    .res-link:hover {
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      border-color: var(--border);
+    }
+    .res-link .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
+    /* ── PROGRESS BAR ── */
+    .progress-bar {
+      width: 100%;
+      height: 5px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--neon-p), var(--neon-c));
+      transition: width 1s ease;
+    }
 
-        .hero-image {
-            text-align: center;
-            animation: float 3s ease-in-out infinite;
-        }
+    /* ── CLOCK ── */
+    #clock-display {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 4rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--neon-p), var(--neon-c));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+      letter-spacing: 2px;
+    }
 
-        .profile-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
+    /* ── SEARCH ── */
+    .search-wrap {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+    #search-q {
+      flex: 1;
+      background: rgba(255,255,255,.05);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: var(--text);
+      font-size: .85rem;
+      font-family: 'JetBrains Mono', monospace;
+      outline: none;
+      transition: border-color .2s;
+    }
+    #search-q:focus { border-color: var(--neon-p); }
+    #search-q::placeholder { color: var(--muted); }
 
-        .avatar {
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, #ff6b6b, #ffd700);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1rem;
-            font-size: 4rem;
-            color: white;
-        }
+    .search-engine-btn {
+      padding: 8px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: .75rem;
+      font-family: 'JetBrains Mono', monospace;
+      transition: all .2s;
+    }
+    .search-engine-btn.sel { border-color: var(--neon-p); color: var(--neon-p); background: rgba(168,85,247,.1); }
+    .search-engine-btn:not(.sel):hover { border-color: var(--border); color: var(--text); }
 
-        /* Skills Section */
-        .skills {
-            padding: 6rem 0;
-            background: rgba(255, 255, 255, 0.05);
-        }
+    /* ── GOALS ── */
+    .goal-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .goal-item:last-child { border-bottom: none; }
+    .goal-item input[type=checkbox] { accent-color: var(--neon-p); width: 15px; height: 15px; cursor: pointer; }
+    .goal-item label { font-size: .85rem; cursor: pointer; transition: color .2s; }
+    .goal-item input:checked + label { text-decoration: line-through; color: var(--muted); }
 
-        .section-title {
-            text-align: center;
-            font-size: 2.5rem;
-            color: white;
-            margin-bottom: 3rem;
-        }
+    /* ── BADGE ── */
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-size: .7rem;
+      font-weight: 600;
+    }
 
-        .skills-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-        }
+    /* ── NEON LINE ── */
+    .neon-line {
+      height: 1px;
+      background: linear-gradient(90deg, var(--neon-p), var(--neon-c), transparent);
+      margin-bottom: 24px;
+      opacity: .4;
+    }
 
-        .skill-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            padding: 2rem;
-            border-radius: 15px;
-            text-align: center;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
+    /* ── REPO CARD ── */
+    .repo-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      transition: all .2s;
+    }
+    .repo-card:hover { border-color: rgba(168,85,247,.35); transform: translateY(-2px); }
+    .repo-card.featured { border-color: rgba(245,158,11,.3); }
+    .repo-card.featured:hover { border-color: rgba(245,158,11,.6); }
 
-        .skill-card:hover {
-            transform: translateY(-10px);
-            background: rgba(255, 255, 255, 0.15);
-        }
+    /* ── TOGGLE SIDEBAR BUTTON ── */
+    #toggle-sidebar {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: color .2s;
+      align-self: flex-start;
+      margin-left: 4px;
+    }
+    #toggle-sidebar:hover { color: var(--text); }
 
-        .skill-icon {
-            font-size: 3rem;
-            color: #ffd700;
-            margin-bottom: 1rem;
-        }
+    /* scrollbar inside sections */
+    .scroll-inner {
+      max-height: calc(100vh - 160px);
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
 
-        .skill-card h3 {
-            color: white;
-            margin-bottom: 1rem;
-        }
+    /* tag */
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: .7rem;
+      background: rgba(255,255,255,.06);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
 
-        .skill-card p {
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        /* Projects Section */
-        .projects {
-            padding: 6rem 0;
-        }
-
-        .projects-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-
-        .project-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            overflow: hidden;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .project-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-        }
-
-        .project-image {
-            height: 200px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            color: white;
-        }
-
-        .project-content {
-            padding: 2rem;
-        }
-
-        .project-content h3 {
-            color: white;
-            margin-bottom: 1rem;
-        }
-
-        .project-content p {
-            color: rgba(255, 255, 255, 0.8);
-            margin-bottom: 1.5rem;
-        }
-
-        .project-tech {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .tech-tag {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 0.3rem 0.8rem;
-            border-radius: 15px;
-            font-size: 0.8rem;
-        }
-
-        /* Contact Section */
-        .contact {
-            padding: 6rem 0;
-            background: rgba(255, 255, 255, 0.05);
-            text-align: center;
-        }
-
-        .social-links {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-
-        .social-link {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 60px;
-            height: 60px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            color: white;
-            text-decoration: none;
-            font-size: 1.5rem;
-            transition: all 0.3s ease;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .social-link:hover {
-            background: #ffd700;
-            color: #333;
-            transform: translateY(-5px);
-        }
-
-        /* Animations */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-            }
-
-            .hero-content {
-                grid-template-columns: 1fr;
-                text-align: center;
-            }
-
-            .hero-text h1 {
-                font-size: 2.5rem;
-            }
-
-            .cta-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .skills-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .social-links {
-                flex-wrap: wrap;
-            }
-        }
-    </style>
+    /* stat dot */
+    .status-dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
+    .dot-green { background: var(--neon-g); box-shadow: 0 0 6px var(--neon-g); }
+    .dot-yellow { background: var(--neon-y); box-shadow: 0 0 6px var(--neon-y); }
+    .dot-purple { background: var(--neon-p); box-shadow: 0 0 6px var(--neon-p); }
+  </style>
 </head>
 <body>
-    <!-- Header -->
-    <header>
-        <nav class="container">
-            <a href="#" class="logo">Juss</a>
-            <ul class="nav-links">
-                <li><a href="#inicio">Inicio</a></li>
-                <li><a href="#habilidades">Habilidades</a></li>
-                <li><a href="#proyectos">Proyectos</a></li>
-                <li><a href="#contacto">Contacto</a></li>
-            </ul>
-        </nav>
-    </header>
 
-    <!-- Hero Section -->
-    <section id="inicio" class="hero">
-        <div class="container">
-            <div class="hero-content">
-                <div class="hero-text">
-                    <h1>Hola, soy <span class="highlight">Jussef</span></h1>
-                    <p>Software Engineer en Spira México y Game Designer en Yux Studios. Especializado en desarrollo web y móvil con pasión por crear experiencias digitales innovadoras.</p>
-                    <div class="cta-buttons">
-                        <a href="#proyectos" class="btn btn-primary">
-                            <i class="fas fa-rocket"></i> Ver Proyectos
-                        </a>
-                        <a href="mailto:jussefwebstudio@gmail.com" class="btn btn-secondary">
-                            <i class="fas fa-envelope"></i> Contactar
-                        </a>
-                    </div>
-                </div>
-                <div class="hero-image">
-                    <div class="profile-card">
-                        <div class="avatar">
-                            <i class="fas fa-code"></i>
-                        </div>
-                        <h3 style="color: white; margin-bottom: 0.5rem;">Jussef</h3>
-                        <p style="color: rgba(255,255,255,0.8);">Full Stack Developer</p>
-                    </div>
-                </div>
-            </div>
+<!-- ══════════════ SIDEBAR ══════════════ -->
+<aside id="sidebar">
+  <div class="logo-mark">&lt;Juss /&gt;</div>
+
+  <button id="toggle-sidebar" title="Toggle sidebar"><i class="fas fa-bars"></i></button>
+
+  <nav style="width:100%;padding:0 8px;display:flex;flex-direction:column;gap:4px;margin-top:8px;">
+    <div class="nav-item active" onclick="showSection('snippets',this)">
+      <span class="icon"><i class="fas fa-code"></i></span>
+      <span class="nav-label">Cofre de Snippets</span>
+    </div>
+    <div class="nav-item" onclick="showSection('hub',this)">
+      <span class="icon"><i class="fab fa-github"></i></span>
+      <span class="nav-label">Hub de Proyectos</span>
+    </div>
+    <div class="nav-item" onclick="showSection('recursos',this)">
+      <span class="icon"><i class="fas fa-bookmark"></i></span>
+      <span class="nav-label">Directorio</span>
+    </div>
+    <div class="nav-item" onclick="showSection('productividad',this)">
+      <span class="icon"><i class="fas fa-terminal"></i></span>
+      <span class="nav-label">Productividad</span>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div style="height:1px;background:var(--border);margin:8px 8px;"></div>
+    <a href="https://github.com/Jussef" target="_blank" class="nav-item" style="text-decoration:none;">
+      <span class="icon"><i class="fab fa-github"></i></span>
+      <span class="nav-label">GitHub</span>
+    </a>
+    <a href="mailto:jussefwebstudio@gmail.com" class="nav-item" style="text-decoration:none;">
+      <span class="icon"><i class="fas fa-envelope"></i></span>
+      <span class="nav-label">Email</span>
+    </a>
+    <a href="https://linkedin.com/in/jussef" target="_blank" class="nav-item" style="text-decoration:none;">
+      <span class="icon"><i class="fab fa-linkedin"></i></span>
+      <span class="nav-label">LinkedIn</span>
+    </a>
+  </div>
+</aside>
+
+<!-- ══════════════ MAIN ══════════════ -->
+<main id="main">
+
+  <!-- ── 1. SNIPPETS ── -->
+  <section id="sec-snippets" class="section active">
+    <div class="page-header">
+      <div class="icon-wrap" style="background:rgba(6,182,212,.15);color:var(--neon-c);">
+        <i class="fas fa-code"></i>
+      </div>
+      <div>
+        <h1>Cofre de Snippets</h1>
+        <p>Pequeños trucos que siempre olvidas · click para copiar</p>
+      </div>
+    </div>
+    <div class="neon-line"></div>
+
+    <div class="grid-3">
+
+      <!-- CSS Reset -->
+      <div class="snippet-card">
+        <div class="snippet-header">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="snippet-lang">CSS</span>
+            <span class="snippet-title">Reset Moderno</span>
+          </div>
+          <button class="copy-btn" onclick="copySnippet(this,'css-reset')">Copiar</button>
         </div>
-    </section>
+        <div class="snippet-body">
+<pre id="css-reset"><span class="op">*</span>, <span class="op">*</span>::before, <span class="op">*</span>::after <span class="op">{</span>
+  margin<span class="op">:</span> <span class="num">0</span>;
+  padding<span class="op">:</span> <span class="num">0</span>;
+  box-sizing<span class="op">:</span> border-box;
+<span class="op">}</span>
 
-    <!-- Skills Section -->
-    <section id="habilidades" class="skills">
-        <div class="container">
-            <h2 class="section-title">Mis Habilidades</h2>
-            <div class="skills-grid">
-                <div class="skill-card">
-                    <div class="skill-icon">
-                        <i class="fab fa-js-square"></i>
-                    </div>
-                    <h3>Frontend Development</h3>
-                    <p>JavaScript, TypeScript, React, HTML5, CSS3, Styled-Components</p>
-                </div>
-                <div class="skill-card">
-                    <div class="skill-icon">
-                        <i class="fas fa-server"></i>
-                    </div>
-                    <h3>Backend Development</h3>
-                    <p>Node.js, Firebase, APIs RESTful</p>
-                </div>
-                <div class="skill-card">
-                    <div class="skill-icon">
-                        <i class="fas fa-mobile-alt"></i>
-                    </div>
-                    <h3>Mobile Development</h3>
-                    <p>React Native, Swift, Kotlin</p>
-                </div>
-                <div class="skill-card">
-                    <div class="skill-icon">
-                        <i class="fas fa-gamepad"></i>
-                    </div>
-                    <h3>Game Design</h3>
-                    <p>C#, Game Development, Design Systems</p>
-                </div>
-            </div>
+<span class="kw">:root</span> <span class="op">{</span>
+  font-synthesis<span class="op">:</span> none;
+  text-rendering<span class="op">:</span> optimizeLegibility;
+<span class="op">}</span></pre>
         </div>
-    </section>
+      </div>
 
-    <!-- Projects Section -->
-    <section id="proyectos" class="projects">
-        <div class="container">
-            <h2 class="section-title">Proyectos Destacados</h2>
-            <div class="projects-grid">
-                <div class="project-card">
-                    <div class="project-image">
-                        <i class="fas fa-globe"></i>
-                    </div>
-                    <div class="project-content">
-                        <h3>Aplicaciones Web</h3>
-                        <p>Desarrollo de aplicaciones web modernas con React y Node.js, enfocadas en la experiencia del usuario.</p>
-                        <div class="project-tech">
-                            <span class="tech-tag">React</span>
-                            <span class="tech-tag">JavaScript</span>
-                            <span class="tech-tag">CSS3</span>
-                        </div>
-                        <a href="https://github.com/Jussef" class="btn btn-primary">
-                            <i class="fab fa-github"></i> Ver en GitHub
-                        </a>
-                    </div>
-                </div>
-                <div class="project-card">
-                    <div class="project-image">
-                        <i class="fas fa-mobile"></i>
-                    </div>
-                    <div class="project-content">
-                        <h3>Apps Móviles</h3>
-                        <p>Desarrollo de aplicaciones móviles nativas e híbridas con React Native y tecnologías modernas.</p>
-                        <div class="project-tech">
-                            <span class="tech-tag">React Native</span>
-                            <span class="tech-tag">TypeScript</span>
-                            <span class="tech-tag">Firebase</span>
-                        </div>
-                        <a href="https://github.com/Jussef" class="btn btn-primary">
-                            <i class="fab fa-github"></i> Ver en GitHub
-                        </a>
-                    </div>
-                </div>
-                <div class="project-card">
-                    <div class="project-image">
-                        <i class="fas fa-paint-brush"></i>
-                    </div>
-                    <div class="project-content">
-                        <h3>Design Systems</h3>
-                        <p>Creación de sistemas de diseño consistentes y escalables para proyectos web y móviles.</p>
-                        <div class="project-tech">
-                            <span class="tech-tag">Styled-Components</span>
-                            <span class="tech-tag">Storybook</span>
-                            <span class="tech-tag">Figma</span>
-                        </div>
-                        <a href="https://github.com/Jussef" class="btn btn-primary">
-                            <i class="fab fa-github"></i> Ver en GitHub
-                        </a>
-                    </div>
-                </div>
-            </div>
+      <!-- Git Config -->
+      <div class="snippet-card">
+        <div class="snippet-header">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="snippet-lang">BASH</span>
+            <span class="snippet-title">Git Setup</span>
+          </div>
+          <button class="copy-btn" onclick="copySnippet(this,'git-setup')">Copiar</button>
         </div>
-    </section>
+        <div class="snippet-body">
+<pre id="git-setup"><span class="cm"># Configuración inicial</span>
+git config <span class="op">--</span>global user.name <span class="str">'Tu Nombre'</span>
+git config <span class="op">--</span>global user.email <span class="str">'tu@email.com'</span>
+git config <span class="op">--</span>global init.defaultBranch main
 
-    <!-- Contact Section -->
-    <section id="contacto" class="contact">
-        <div class="container">
-            <h2 class="section-title">¡Conectemos!</h2>
-            <p style="color: rgba(255,255,255,0.9); font-size: 1.2rem; max-width: 600px; margin: 0 auto;">
-                Me encanta conectar con diferentes personas. Si quieres saludar, ¡estaré feliz de conocerte más!
-            </p>
-            <div class="social-links">
-                <a href="mailto:jussefwebstudio@gmail.com" class="social-link" title="Email">
-                    <i class="fas fa-envelope"></i>
-                </a>
-                <a href="https://github.com/Jussef" class="social-link" title="GitHub">
-                    <i class="fab fa-github"></i>
-                </a>
-                <a href="https://linktr.ee/jussef" class="social-link" title="Linktree">
-                    <i class="fas fa-link"></i>
-                </a>
-                <a href="https://linkedin.com/in/jussef" class="social-link" title="LinkedIn">
-                    <i class="fab fa-linkedin"></i>
-                </a>
-            </div>
-            <p style="color: rgba(255,255,255,0.6); margin-top: 3rem;">
-                © 2025 Jussef. Hecho con ❤️ y mucho café
-            </p>
+<span class="cm"># Alias útiles</span>
+git config <span class="op">--</span>global alias.lg <span class="str">"log --oneline --graph"</span></pre>
         </div>
-    </section>
+      </div>
 
-    <script>
-        // Smooth scrolling for navigation links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
+      <!-- Fetch API -->
+      <div class="snippet-card">
+        <div class="snippet-header">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="snippet-lang">JS</span>
+            <span class="snippet-title">Fetch Template</span>
+          </div>
+          <button class="copy-btn" onclick="copySnippet(this,'fetch-api')">Copiar</button>
+        </div>
+        <div class="snippet-body">
+<pre id="fetch-api"><span class="kw">const</span> <span class="fn">getData</span> = <span class="kw">async</span> (url) <span class="op">=></span> <span class="op">{</span>
+  <span class="kw">try</span> <span class="op">{</span>
+    <span class="kw">const</span> res <span class="op">=</span> <span class="kw">await</span> <span class="fn">fetch</span>(url);
+    <span class="kw">if</span> (<span class="op">!</span>res.ok) <span class="kw">throw new</span> <span class="fn">Error</span>(res.status);
+    <span class="kw">return</span> res.<span class="fn">json</span>();
+  <span class="op">}</span> <span class="kw">catch</span> (e) <span class="op">{</span>
+    console.<span class="fn">error</span>(e); <span class="kw">return null</span>;
+  <span class="op">}</span>
+<span class="op">}</span>;</pre>
+        </div>
+      </div>
 
-        // Add scroll effect to header
-        window.addEventListener('scroll', () => {
-            const header = document.querySelector('header');
-            if (window.scrollY > 100) {
-                header.style.background = 'rgba(255, 255, 255, 0.15)';
-            } else {
-                header.style.background = 'rgba(255, 255, 255, 0.1)';
-            }
-        });
+      <!-- Flexbox Center -->
+      <div class="snippet-card">
+        <div class="snippet-header">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="snippet-lang">CSS</span>
+            <span class="snippet-title">Flexbox Center</span>
+          </div>
+          <button class="copy-btn" onclick="copySnippet(this,'flex-center')">Copiar</button>
+        </div>
+        <div class="snippet-body">
+<pre id="flex-center"><span class="cm">/* Centra cualquier hijo */</span>
+<span class="kw">.center</span> <span class="op">{</span>
+  display<span class="op">:</span> flex;
+  align-items<span class="op">:</span> center;
+  justify-content<span class="op">:</span> center;
+<span class="op">}</span>
 
-        // Add animation to skill cards on scroll
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
+<span class="cm">/* Grid version */</span>
+<span class="kw">.center-grid</span> <span class="op">{</span>
+  display<span class="op">:</span> grid;
+  place-items<span class="op">:</span> center;
+<span class="op">}</span></pre>
+        </div>
+      </div>
 
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.animationDelay = '0s';
-                    entry.target.style.animation = 'fadeInUp 1s ease forwards';
-                }
-            });
-        }, observerOptions);
+      <!-- useEffect -->
+      <div class="snippet-card">
+        <div class="snippet-header">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="snippet-lang">TSX</span>
+            <span class="snippet-title">useEffect + cleanup</span>
+          </div>
+          <button class="copy-btn" onclick="copySnippet(this,'use-effect')">Copiar</button>
+        </div>
+        <div class="snippet-body">
+<pre id="use-effect"><span class="fn">useEffect</span>(() <span class="op">=></span> <span class="op">{</span>
+  <span class="kw">const</span> sub <span class="op">=</span> <span class="fn">subscribe</span>(callback);
+  <span class="kw">return</span> () <span class="op">=></span> sub.<span class="fn">unsubscribe</span>();
+<span class="op">}</span>, [dep]);
 
-        document.querySelectorAll('.skill-card, .project-card').forEach(card => {
-            observer.observe(card);
-        });
-    </script>
+<span class="cm">// Con AbortController</span>
+<span class="fn">useEffect</span>(() <span class="op">=></span> <span class="op">{</span>
+  <span class="kw">const</span> ac <span class="op">=</span> <span class="kw">new</span> <span class="fn">AbortController</span>();
+  <span class="fn">fetch</span>(url, <span class="op">{</span> signal<span class="op">:</span> ac.signal <span class="op">}</span>);
+  <span class="kw">return</span> () <span class="op">=></span> ac.<span class="fn">abort</span>();
+<span class="op">}</span>, [url]);</pre>
+        </div>
+      </div>
+
+      <!-- localStorage util -->
+      <div class="snippet-card">
+        <div class="snippet-header">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="snippet-lang">JS</span>
+            <span class="snippet-title">LocalStorage Helper</span>
+          </div>
+          <button class="copy-btn" onclick="copySnippet(this,'local-storage')">Copiar</button>
+        </div>
+        <div class="snippet-body">
+<pre id="local-storage"><span class="kw">const</span> store <span class="op">= {</span>
+  <span class="fn">set</span>: (k, v) <span class="op">=></span>
+    localStorage.<span class="fn">setItem</span>(k, <span class="fn">JSON.stringify</span>(v)),
+
+  <span class="fn">get</span>: (k, fb <span class="op">=</span> <span class="kw">null</span>) <span class="op">=></span>
+    <span class="fn">JSON.parse</span>(localStorage.<span class="fn">getItem</span>(k)) ?? fb,
+
+  <span class="fn">del</span>: (k) <span class="op">=></span>
+    localStorage.<span class="fn">removeItem</span>(k),
+<span class="op">}</span>;</pre>
+        </div>
+      </div>
+
+    </div><!-- /grid -->
+  </section>
+
+  <!-- ── 2. HUB DE PROYECTOS ── -->
+  <section id="sec-hub" class="section">
+    <div class="page-header">
+      <div class="icon-wrap" style="background:rgba(168,85,247,.15);color:var(--neon-p);">
+        <i class="fab fa-github"></i>
+      </div>
+      <div>
+        <h1>Hub de Proyectos</h1>
+        <p>Panel de control de todo lo que tienes en GitHub</p>
+      </div>
+    </div>
+    <div class="neon-line"></div>
+
+    <!-- Repo destacado -->
+    <div class="repo-card featured" style="margin-bottom:20px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:200px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <i class="fas fa-star" style="color:var(--neon-y);font-size:.9rem;"></i>
+            <span style="font-weight:700;font-size:1.05rem;">Curso de JavaScript</span>
+            <span class="badge" style="background:rgba(245,158,11,.15);color:var(--neon-y);border:1px solid rgba(245,158,11,.3);">En progreso</span>
+          </div>
+          <p style="font-size:.84rem;color:var(--muted);margin-bottom:16px;line-height:1.5;">
+            Curso completo de JS desde cero. Aprende con ejemplos reales, proyectos prácticos y desafíos semanales.
+          </p>
+          <div style="margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted);margin-bottom:6px;">
+              <span>Progreso del contenido</span>
+              <span style="color:var(--neon-y);">35%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width:35%;background:linear-gradient(90deg,var(--neon-y),var(--neon-p));"></div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <span class="tag">JavaScript</span>
+            <span class="tag">HTML</span>
+            <span class="tag">CSS</span>
+            <span class="tag">Proyectos</span>
+          </div>
+        </div>
+        <a href="https://github.com/Jussef" target="_blank"
+           style="display:inline-flex;align-items:center;gap:8px;padding:9px 18px;border-radius:10px;background:rgba(168,85,247,.2);border:1px solid rgba(168,85,247,.4);color:var(--neon-p);text-decoration:none;font-size:.83rem;font-weight:600;transition:all .2s;white-space:nowrap;"
+           onmouseover="this.style.background='rgba(168,85,247,.35)'" onmouseout="this.style.background='rgba(168,85,247,.2)'">
+          <i class="fab fa-github"></i> Ver repo
+        </a>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- Web -->
+      <div class="repo-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <span class="status-dot dot-green"></span>
+          <span style="font-weight:600;">jussef.github.io</span>
+          <span class="tag" style="margin-left:auto;">Público</span>
+        </div>
+        <p style="font-size:.82rem;color:var(--muted);margin-bottom:12px;">Portfolio y dashboard personal — el sitio que estás viendo.</p>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+          <span class="tag">HTML</span><span class="tag">Tailwind</span><span class="tag">JS</span>
+        </div>
+        <a href="https://github.com/Jussef/jussef.github.io" target="_blank" class="res-link" style="padding:6px 0;">
+          <i class="fas fa-external-link-alt" style="font-size:.75rem;"></i> Abrir en GitHub
+        </a>
+      </div>
+
+      <!-- Móvil -->
+      <div class="repo-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <span class="status-dot dot-purple"></span>
+          <span style="font-weight:600;">Apps Móviles</span>
+          <span class="tag" style="margin-left:auto;">React Native</span>
+        </div>
+        <p style="font-size:.82rem;color:var(--muted);margin-bottom:12px;">Apps híbridas con React Native, TypeScript y Firebase.</p>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+          <span class="tag">React Native</span><span class="tag">TypeScript</span><span class="tag">Firebase</span>
+        </div>
+        <a href="https://github.com/Jussef" target="_blank" class="res-link" style="padding:6px 0;">
+          <i class="fas fa-external-link-alt" style="font-size:.75rem;"></i> Ver todos los repos
+        </a>
+      </div>
+
+      <!-- Game -->
+      <div class="repo-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <span class="status-dot dot-yellow"></span>
+          <span style="font-weight:600;">Yux Studios</span>
+          <span class="tag" style="margin-left:auto;">Game Design</span>
+        </div>
+        <p style="font-size:.82rem;color:var(--muted);margin-bottom:12px;">Proyectos de diseño de videojuegos y sistemas de juego en C#.</p>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+          <span class="tag">C#</span><span class="tag">Unity</span><span class="tag">Design</span>
+        </div>
+        <a href="https://github.com/Jussef" target="_blank" class="res-link" style="padding:6px 0;">
+          <i class="fas fa-external-link-alt" style="font-size:.75rem;"></i> Abrir en GitHub
+        </a>
+      </div>
+
+      <!-- Design Systems -->
+      <div class="repo-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <span class="status-dot dot-green"></span>
+          <span style="font-weight:600;">Design Systems</span>
+          <span class="tag" style="margin-left:auto;">Spira México</span>
+        </div>
+        <p style="font-size:.82rem;color:var(--muted);margin-bottom:12px;">Componentes y sistemas de diseño escalables para web y móvil.</p>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+          <span class="tag">Storybook</span><span class="tag">Figma</span><span class="tag">React</span>
+        </div>
+        <a href="https://github.com/Jussef" target="_blank" class="res-link" style="padding:6px 0;">
+          <i class="fas fa-external-link-alt" style="font-size:.75rem;"></i> Ver proyectos
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 3. DIRECTORIO ── -->
+  <section id="sec-recursos" class="section">
+    <div class="page-header">
+      <div class="icon-wrap" style="background:rgba(16,185,129,.15);color:var(--neon-g);">
+        <i class="fas fa-bookmark"></i>
+      </div>
+      <div>
+        <h1>Directorio de Favoritos</h1>
+        <p>Las herramientas que realmente uso · curadas para devs</p>
+      </div>
+    </div>
+    <div class="neon-line"></div>
+
+    <div class="grid-3">
+
+      <!-- Diseño -->
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+          <div style="width:28px;height:28px;border-radius:8px;background:rgba(168,85,247,.2);display:flex;align-items:center;justify-content:center;font-size:.8rem;color:var(--neon-p);">
+            <i class="fas fa-palette"></i>
+          </div>
+          <span style="font-weight:600;font-size:.95rem;">Diseño</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:2px;">
+          <a href="https://coolors.co" target="_blank" class="res-link"><span class="dot" style="background:#a855f7;"></span>Coolors — Paletas de color</a>
+          <a href="https://fonts.google.com" target="_blank" class="res-link"><span class="dot" style="background:#06b6d4;"></span>Google Fonts</a>
+          <a href="https://lucide.dev" target="_blank" class="res-link"><span class="dot" style="background:#10b981;"></span>Lucide Icons</a>
+          <a href="https://uicolors.app" target="_blank" class="res-link"><span class="dot" style="background:#f59e0b;"></span>UI Colors — Tailwind</a>
+          <a href="https://css.glass" target="_blank" class="res-link"><span class="dot" style="background:#a855f7;"></span>CSS Glass Generator</a>
+          <a href="https://www.figma.com" target="_blank" class="res-link"><span class="dot" style="background:#06b6d4;"></span>Figma</a>
+          <a href="https://undraw.co" target="_blank" class="res-link"><span class="dot" style="background:#10b981;"></span>unDraw — Ilustraciones</a>
+        </div>
+      </div>
+
+      <!-- Dev -->
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+          <div style="width:28px;height:28px;border-radius:8px;background:rgba(6,182,212,.2);display:flex;align-items:center;justify-content:center;font-size:.8rem;color:var(--neon-c);">
+            <i class="fas fa-terminal"></i>
+          </div>
+          <span style="font-weight:600;font-size:.95rem;">Dev</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:2px;">
+          <a href="https://developer.mozilla.org" target="_blank" class="res-link"><span class="dot" style="background:#a855f7;"></span>MDN Web Docs</a>
+          <a href="https://stackoverflow.com" target="_blank" class="res-link"><span class="dot" style="background:#f59e0b;"></span>Stack Overflow</a>
+          <a href="https://caniuse.com" target="_blank" class="res-link"><span class="dot" style="background:#10b981;"></span>Can I Use</a>
+          <a href="https://regex101.com" target="_blank" class="res-link"><span class="dot" style="background:#06b6d4;"></span>Regex101</a>
+          <a href="https://transform.tools" target="_blank" class="res-link"><span class="dot" style="background:#a855f7;"></span>Transform Tools</a>
+          <a href="https://bundlephobia.com" target="_blank" class="res-link"><span class="dot" style="background:#06b6d4;"></span>Bundle Phobia</a>
+          <a href="https://devdocs.io" target="_blank" class="res-link"><span class="dot" style="background:#10b981;"></span>DevDocs</a>
+        </div>
+      </div>
+
+      <!-- IA & Infra -->
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+          <div style="width:28px;height:28px;border-radius:8px;background:rgba(16,185,129,.2);display:flex;align-items:center;justify-content:center;font-size:.8rem;color:var(--neon-g);">
+            <i class="fas fa-robot"></i>
+          </div>
+          <span style="font-weight:600;font-size:.95rem;">IA &amp; Deploy</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:2px;">
+          <a href="https://claude.ai" target="_blank" class="res-link"><span class="dot" style="background:#a855f7;"></span>Claude — Anthropic</a>
+          <a href="https://vercel.com" target="_blank" class="res-link"><span class="dot" style="background:#10b981;"></span>Vercel</a>
+          <a href="https://netlify.com" target="_blank" class="res-link"><span class="dot" style="background:#06b6d4;"></span>Netlify</a>
+          <a href="https://firebase.google.com" target="_blank" class="res-link"><span class="dot" style="background:#f59e0b;"></span>Firebase</a>
+          <a href="https://supabase.com" target="_blank" class="res-link"><span class="dot" style="background:#10b981;"></span>Supabase</a>
+          <a href="https://www.npmjs.com" target="_blank" class="res-link"><span class="dot" style="background:#f59e0b;"></span>npm</a>
+          <a href="https://excalidraw.com" target="_blank" class="res-link"><span class="dot" style="background:#a855f7;"></span>Excalidraw</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── 4. PRODUCTIVIDAD ── -->
+  <section id="sec-productividad" class="section">
+    <div class="page-header">
+      <div class="icon-wrap" style="background:rgba(245,158,11,.15);color:var(--neon-y);">
+        <i class="fas fa-terminal"></i>
+      </div>
+      <div>
+        <h1>Productividad</h1>
+        <p>Reloj · Buscador · Metas de la semana · Pomodoro</p>
+      </div>
+    </div>
+    <div class="neon-line"></div>
+
+    <div class="grid-2" style="margin-bottom:18px;">
+      <!-- Reloj + Buscador -->
+      <div class="card" style="display:flex;flex-direction:column;align-items:center;gap:18px;padding:32px 24px;">
+        <div id="clock-display">00:00:00</div>
+        <div id="date-label" style="font-size:.8rem;color:var(--muted);font-family:'JetBrains Mono',monospace;letter-spacing:.5px;"></div>
+
+        <!-- Motor de búsqueda -->
+        <div style="display:flex;gap:6px;width:100%;justify-content:center;flex-wrap:wrap;">
+          <button class="search-engine-btn sel" data-engine="google" onclick="selectEngine(this)">Google</button>
+          <button class="search-engine-btn" data-engine="github" onclick="selectEngine(this)">GitHub</button>
+          <button class="search-engine-btn" data-engine="mdn" onclick="selectEngine(this)">MDN</button>
+          <button class="search-engine-btn" data-engine="npm" onclick="selectEngine(this)">npm</button>
+        </div>
+
+        <form onsubmit="doSearch(event)" class="search-wrap">
+          <input id="search-q" type="text" placeholder="Buscar...">
+          <button type="submit" style="padding:10px 16px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--neon-p),var(--neon-c));color:white;cursor:pointer;font-size:.85rem;transition:opacity .2s;" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">
+            <i class="fas fa-search"></i>
+          </button>
+        </form>
+      </div>
+
+      <!-- Pomodoro -->
+      <div class="card" style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:32px 24px;">
+        <span style="font-size:.78rem;color:var(--muted);font-family:'JetBrains Mono',monospace;" id="pomo-label">FOCO · 25:00</span>
+        <div style="position:relative;width:130px;height:130px;">
+          <svg width="130" height="130" style="transform:rotate(-90deg)">
+            <circle cx="65" cy="65" r="55" fill="none" stroke="var(--border)" stroke-width="6"/>
+            <circle id="pomo-ring" cx="65" cy="65" r="55" fill="none" stroke="url(#pomoGrad)" stroke-width="6"
+              stroke-dasharray="345.6" stroke-dashoffset="0" stroke-linecap="round" style="transition:stroke-dashoffset .5s;"/>
+            <defs>
+              <linearGradient id="pomoGrad" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="var(--neon-p)"/>
+                <stop offset="100%" stop-color="var(--neon-c)"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div id="pomo-time" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:1.6rem;font-weight:700;color:var(--text);">25:00</div>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <button onclick="togglePomodoro()" id="pomo-btn"
+            style="padding:8px 20px;border-radius:10px;border:1px solid rgba(168,85,247,.4);background:rgba(168,85,247,.15);color:var(--neon-p);cursor:pointer;font-size:.82rem;font-family:'Inter',sans-serif;transition:all .2s;"
+            onmouseover="this.style.background='rgba(168,85,247,.3)'" onmouseout="if(!pomoRunning)this.style.background='rgba(168,85,247,.15)'">
+            <i class="fas fa-play" id="pomo-icon"></i> Iniciar
+          </button>
+          <button onclick="resetPomodoro()"
+            style="padding:8px 16px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;font-size:.82rem;transition:all .2s;"
+            onmouseover="this.style.borderColor='var(--border)';this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">
+            <i class="fas fa-redo"></i>
+          </button>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="setPomoMode('focus')" class="search-engine-btn sel" id="mode-focus">Foco 25m</button>
+          <button onclick="setPomoMode('short')" class="search-engine-btn" id="mode-short">Pausa 5m</button>
+          <button onclick="setPomoMode('long')" class="search-engine-btn" id="mode-long">Pausa 15m</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Metas -->
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
+        <i class="fas fa-bullseye" style="color:var(--neon-y);"></i>
+        <span style="font-weight:600;">Metas de la semana</span>
+        <span style="font-size:.72rem;color:var(--muted);margin-left:auto;font-family:'JetBrains Mono',monospace;">semana del 28 abr – 3 may</span>
+      </div>
+      <div id="goals-list">
+        <div class="goal-item">
+          <input type="checkbox" id="g1">
+          <label for="g1">Terminar sección 3 del curso de JavaScript</label>
+        </div>
+        <div class="goal-item">
+          <input type="checkbox" id="g2">
+          <label for="g2">Hacer deploy de nuevo proyecto React en Vercel</label>
+        </div>
+        <div class="goal-item">
+          <input type="checkbox" id="g3">
+          <label for="g3">Leer documentación de Firebase Auth</label>
+        </div>
+        <div class="goal-item">
+          <input type="checkbox" id="g4">
+          <label for="g4">Diseñar 3 pantallas nuevas en Figma para Yux Studios</label>
+        </div>
+        <div class="goal-item">
+          <input type="checkbox" id="g5">
+          <label for="g5">Revisar PRs pendientes en Spira México</label>
+        </div>
+      </div>
+      <p style="font-size:.72rem;color:var(--border);margin-top:14px;font-family:'JetBrains Mono',monospace;">// edita el HTML cada lunes para actualizar tus metas</p>
+    </div>
+
+  </section>
+
+</main>
+
+<script>
+  // ── SIDEBAR TOGGLE ──
+  const sidebar = document.getElementById('sidebar');
+  document.getElementById('toggle-sidebar').addEventListener('click', () => {
+    sidebar.classList.toggle('expanded');
+  });
+
+  // ── TABS ──
+  function showSection(name, el) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById('sec-' + name).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  // ── COPY SNIPPET ──
+  function copySnippet(btn, id) {
+    const text = document.getElementById(id).innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = '✓ Copiado';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  // ── CLOCK ──
+  function tick() {
+    const now = new Date();
+    document.getElementById('clock-display').textContent =
+      now.toLocaleTimeString('es-MX', { hour12: false });
+    document.getElementById('date-label').textContent =
+      now.toLocaleDateString('es-MX', { weekday:'long', day:'2-digit', month:'long', year:'numeric' }).toUpperCase();
+  }
+  tick(); setInterval(tick, 1000);
+
+  // ── SEARCH ──
+  const engines = {
+    google: 'https://www.google.com/search?q=',
+    github: 'https://github.com/search?q=',
+    mdn:    'https://developer.mozilla.org/es/search?q=',
+    npm:    'https://www.npmjs.com/search?q=',
+  };
+  let currentEngine = 'google';
+
+  function selectEngine(btn) {
+    document.querySelectorAll('.search-engine-btn').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    currentEngine = btn.dataset.engine;
+  }
+
+  function doSearch(e) {
+    e.preventDefault();
+    const q = document.getElementById('search-q').value.trim();
+    if (!q) return;
+    window.open(engines[currentEngine] + encodeURIComponent(q), '_blank');
+  }
+
+  // ── POMODORO ──
+  const MODES = { focus: 25*60, short: 5*60, long: 15*60 };
+  const MODE_LABELS = { focus: 'FOCO', short: 'PAUSA CORTA', long: 'PAUSA LARGA' };
+  let pomoMode = 'focus';
+  let pomoTotal = MODES.focus;
+  let pomoLeft  = MODES.focus;
+  let pomoRunning = false;
+  let pomoTimer = null;
+  const CIRCUM = 2 * Math.PI * 55;
+
+  function renderPomo() {
+    const mm = String(Math.floor(pomoLeft / 60)).padStart(2,'0');
+    const ss = String(pomoLeft % 60).padStart(2,'0');
+    document.getElementById('pomo-time').textContent = `${mm}:${ss}`;
+    document.getElementById('pomo-label').textContent = `${MODE_LABELS[pomoMode]} · ${mm}:${ss}`;
+    const offset = CIRCUM * (1 - pomoLeft / pomoTotal);
+    document.getElementById('pomo-ring').style.strokeDashoffset = offset;
+  }
+
+  function togglePomodoro() {
+    if (pomoRunning) {
+      clearInterval(pomoTimer);
+      pomoRunning = false;
+      document.getElementById('pomo-btn').innerHTML = '<i class="fas fa-play" id="pomo-icon"></i> Iniciar';
+    } else {
+      pomoRunning = true;
+      document.getElementById('pomo-btn').innerHTML = '<i class="fas fa-pause" id="pomo-icon"></i> Pausar';
+      pomoTimer = setInterval(() => {
+        if (pomoLeft > 0) { pomoLeft--; renderPomo(); }
+        else {
+          clearInterval(pomoTimer); pomoRunning = false;
+          document.getElementById('pomo-btn').innerHTML = '<i class="fas fa-play"></i> Iniciar';
+          if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+            new Notification('Pomodoro terminado 🍅', { body: '¡Toma un descanso!' });
+          }
+        }
+      }, 1000);
+    }
+  }
+
+  function resetPomodoro() {
+    clearInterval(pomoTimer); pomoRunning = false;
+    pomoLeft = pomoTotal;
+    renderPomo();
+    document.getElementById('pomo-btn').innerHTML = '<i class="fas fa-play"></i> Iniciar';
+  }
+
+  function setPomoMode(mode) {
+    clearInterval(pomoTimer); pomoRunning = false;
+    pomoMode = mode; pomoTotal = MODES[mode]; pomoLeft = pomoTotal;
+    ['focus','short','long'].forEach(m => {
+      document.getElementById('mode-'+m).classList.toggle('sel', m === mode);
+    });
+    renderPomo();
+    document.getElementById('pomo-btn').innerHTML = '<i class="fas fa-play"></i> Iniciar';
+  }
+
+  renderPomo();
+</script>
 </body>
 </html>
